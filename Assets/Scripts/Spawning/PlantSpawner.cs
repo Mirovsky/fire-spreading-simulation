@@ -1,21 +1,27 @@
 ﻿using System;
 using UnityEngine;
+using Unity.Entities;
 using Unity.Mathematics;
 
 
 public abstract class PlantSpawner
 {
-    protected GameObject plant;
+    protected GameObject plantPrefab;
 
+    protected EntityManager manager;
     protected SimulationSettings settings;
     protected SpawnedPlantsManager plantsManager;
+
     protected Terrain terrain;
     protected TerrainData terrainData;
     protected Vector3 terrainSize;
     protected Vector3 terrainOrigin;
 
-    public PlantSpawner(Terrain t, SpawnedPlantsManager p, SimulationSettings s)
+
+    protected PlantSpawner(Terrain t, SpawnedPlantsManager p, SimulationSettings s)
     {
+        manager = World.Active.GetOrCreateManager<EntityManager>();
+
         plantsManager = p;
         settings = s;
         terrain = t;
@@ -37,9 +43,16 @@ public abstract class PlantSpawner
         return new Tuple<float3, float4>(position, rotation);
     }
 
-    protected void SetComponentData(GameObject plantEntity, Tuple<float3, float4> positionRotation)
+    protected void SetComponentData(Entity entity, Tuple<float3, float4> positionRotation)
     {
-        var position = plantEntity.GetComponent<Position>().Value = positionRotation.Item1;
-        var rotation = plantEntity.GetComponent<Rotation>().Value = positionRotation.Item2;
+        manager.SetComponentData(entity, new Position { Value = positionRotation.Item1 });
+        manager.SetComponentData(entity, new Rotation { Value = positionRotation.Item2 });
+        manager.SetComponentData(entity, new HeatAccumulator { });
+
+        manager.AddBuffer<NeighboursBufferElement>(entity);
+
+        /* manager.SetComponentData(entity, new Heat { });
+        manager.SetComponentData(entity, new Fuel { });
+        manager.SetComponentData(entity, new HeatAccumulator { }); */
     }
 }

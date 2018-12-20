@@ -1,34 +1,37 @@
 ﻿using UnityEngine;
 using Unity.Entities;
-using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Burst;
+using Unity.Jobs;
 
 
 [UpdateBefore(typeof(FirePropagationSystem))]
-public class FuelConsumptionSystem : ComponentSystem
+public class FuelConsumptionSystem : JobComponentSystem
 {
-    public struct Group
+    public struct FuelConsumptionJob : IJobProcessComponentData<Fuel, Heat>
     {
-        public readonly int Length;
+        public float deltaTime;
 
-        public ComponentArray<Fuel> fuel;
-
-        [ReadOnly]
-        public ComponentArray<Heat> heat;
-    }
-
-    [Inject]
-    Group group;
-
-    protected override void OnUpdate()
-    {
-        if (!Simulation.isRuning) return;
-
-        for (var i = 0; i < group.Length; i++) {
-            if (group.heat[i].heat > group.heat[i].combustionThreshold) {
-                group.fuel[i].fuel -= group.heat[i].radiationRate * Time.deltaTime;
-                group.fuel[i].fuel = math.max(group.fuel[i].fuel, 0f);
+        [BurstCompile]
+        public void Execute(ref Fuel fuel, ref Heat heat)
+        {
+            if (heat.heat > heat.combustionThreshold && fuel.fuel > 0)
+            {
+                fuel.fuel -= heat.radiationRate * deltaTime;
+                fuel.fuel = math.max(fuel.fuel, 0f);
             }
         }
+    }
+
+    protected override JobHandle OnUpdate(JobHandle inputDeps)
+    {
+        if (!Simulation.isRuning) return inputDeps;
+
+        var job = new FuelConsumptionJob
+        {
+            deltaTime = Time.deltaTime
+        };
+
+        return job.Schedule(this, inputDeps);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Entities;
 using Unity.Mathematics;
 
 public class FieldPlantSpawner : PlantSpawner
@@ -16,30 +17,39 @@ public class FieldPlantSpawner : PlantSpawner
         for (var i = 0; i < settings.plantsCount; i++) {
             var plant = UnityEngine.Object.Instantiate(settings.plantsPrefab);
             var positionRotation = ComputePlantPositionAndRotation();
+            var entity = plant.GetComponent<GameObjectEntity>().Entity;
 
-            SetComponentData(plant, positionRotation);
+            SetComponentData(entity, positionRotation);
 
-            plantsManager.Add(plant);
+            plantsManager.Add(entity);
         }
 
         plantsManager.drawDebug = true;
 
         var distance = settings.neighborSize;
         for (var i = 0; i < settings.plantsCount; i++) {
-            var go = plantsManager.Get(i);
+            var entity = plantsManager.Get(i);
 
-            var pos = go.GetComponent<Position>().Value;
-            var neighbors = go.GetComponent<Neighbors>();
-            
-            neighbors.neighbors = new List<PlantsLookupItem>(
-                plantsManager.GetSurroudings((int)(pos.x - distance / 2), (int)(pos.z - distance / 2), (int)distance, (int)distance)
+            var pos = manager.GetComponentData<Position>(entity).Value;
+            var neighboursBuffer = manager.GetBuffer<NeighboursBufferElement>(entity);
+
+            var neighbours = plantsManager.GetSurroudings(
+                (int)(pos.x - distance / 2),
+                (int)(pos.z - distance / 2),
+                (int)distance,
+                (int)distance
             );
+
+            for (int e = 0; e < neighbours.Count; e++)
+            {
+                neighboursBuffer.Add(new NeighboursBufferElement { Value = neighbours[e] });
+            }
         }
     }
 
     public void Clear()
     {
-        plantsManager.Clear();
+        // plantsManager.Clear();
     }
 
     Tuple<float3, float4> ComputePlantPositionAndRotation()

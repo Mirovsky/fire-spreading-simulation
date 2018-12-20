@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using Unity.Mathematics;
+﻿using Unity.Mathematics;
 using Unity.Entities;
 
 
+[System.Serializable]
 public struct Position : IComponentData
 {
     public float3 Value;

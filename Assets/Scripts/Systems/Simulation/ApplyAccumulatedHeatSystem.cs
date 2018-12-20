@@ -1,29 +1,30 @@
 ﻿using Unity.Entities;
 using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Jobs;
+using Unity.Burst;
 
 
 [UpdateAfter(typeof(CooldownSystem))]
-public class ApplyAccumulatedHeatSystem : ComponentSystem
+public class ApplyAccumulatedHeatSystem : JobComponentSystem
 {
-    public struct Group
+    public struct ApplyAccumulatedHeatJob : IJobProcessComponentData<Heat, HeatAccumulator>
     {
-        public readonly int Length;
-        public ComponentArray<Heat> heat;
-        public ComponentArray<HeatAccumulator> heatAccumulator;
+
+        [BurstCompile]
+        public void Execute(ref Heat heat, ref HeatAccumulator heatAccumulator)
+        {
+            heat.heat += heatAccumulator.accumulatedHeat;
+            heat.heat = math.clamp(heat.heat, 0f, heat.maximumHeat);
+        }
     }
 
-    [Inject]
-    private Group group;
-
-    protected override void OnUpdate()
+    protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
-        if (!Simulation.isRuning) return;
+        if (!Simulation.isRuning) return inputDeps;
 
-        for (var i = 0; i < group.Length; i++) {
-            group.heat[i].heat += group.heatAccumulator[i].accumulatedHeat;
-            group.heat[i].heat = math.clamp(group.heat[i].heat, 0f, group.heat[i].maximumHeat);
-            group.heatAccumulator[i].accumulatedHeat = 0;
-        }
+        var job = new ApplyAccumulatedHeatJob {};
+
+        return job.Schedule(this, inputDeps);
     }
 }

@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Unity.Entities;
 
 
 // Move to its own file
-public class PlantsLookupItem : IQuadTreeObject
+public struct PlantsLookupItem : IQuadTreeObject
 {
+    public Entity entity;
     public Position position;
     public Heat heat;
 
-    public PlantsLookupItem(Position p, Heat h)
+    public PlantsLookupItem(Entity e, Position p, Heat h)
     {
+        entity = e;
         position = p;
         heat = h;
     }
@@ -24,7 +27,8 @@ public class SpawnedPlantsManager : MonoBehaviour
 {
     public bool drawDebug = false;
 
-    List<GameObject> plants;
+    EntityManager manager;
+    List<Entity> plants;
     QuadTree<PlantsLookupItem> plantsLookup;
     int totalPlants;
 
@@ -36,22 +40,27 @@ public class SpawnedPlantsManager : MonoBehaviour
 
         var quadTreeRect = new Rect(terrainOrigin.x, terrainOrigin.z, terrainSize.x, terrainSize.z);
 
-        plants = new List<GameObject>(Simulation.Settings.plantsCount);
+        manager = World.Active.GetOrCreateManager<EntityManager>();
+        plants = new List<Entity>(Simulation.Settings.plantsCount);
         plantsLookup = new QuadTree<PlantsLookupItem>(10, quadTreeRect);
     }
 
-    public PlantsLookupItem Add(GameObject gameObject)
+    public PlantsLookupItem Add(Entity entity)
     {
         totalPlants++;
-        plants.Add(gameObject);
 
-        var lookupItem = new PlantsLookupItem(gameObject.GetComponent<Position>(), gameObject.GetComponent<Heat>());
-        plantsLookup.Insert(lookupItem);
+        var position = manager.GetComponentData<Position>(entity);
+        var heat = manager.GetComponentData<Heat>(entity);
 
-        return lookupItem;
+        plants.Add(entity);
+
+        var lookup = new PlantsLookupItem(entity, position, heat);
+        plantsLookup.Insert(lookup);
+
+        return lookup;
     }
 
-    public GameObject Get(int i)
+    public Entity Get(int i)
     {
         return plants[i];
     }
@@ -72,9 +81,9 @@ public class SpawnedPlantsManager : MonoBehaviour
     {
         plantsLookup.Clear();
 
-        for (var i = 0; i < plants.Count; i++) {
+        /* for (var i = 0; i < plants.Count; i++) {
             Destroy(plants[i]);
-        }
+        } */
 
         plants.Clear();
     }
