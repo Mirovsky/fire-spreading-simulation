@@ -1,6 +1,6 @@
 # Fire Spreading Simulation
 
-Simple fire spreading simulation in Unity. Using Unity 2018.3. Using new Unity ECS implementation also with some other preview packages.
+Simple fire spreading simulation in Unity. Using Unity 2018.3. Using new Unity ECS implementation with hybrid approach also with some other preview packages.
 
 ## Controls
 

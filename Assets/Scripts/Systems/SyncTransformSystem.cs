@@ -1,35 +1,56 @@
 ﻿using UnityEngine;
+using UnityEngine.Jobs;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Transforms;
 
 
-public class SyncTransformSystem : ComponentSystem
+public class SyncTransformSystem : JobComponentSystem
 {
-    public struct Data
+    public struct SyncTransformJob : IJobParallelForTransform
     {
         [ReadOnly]
-        public Position position;
+        public ComponentDataArray<Position> positions;
         [ReadOnly]
-        public Rotation rotation;
+        public ComponentDataArray<Rotation> rotations;
 
-        public Transform outputTransform;
+        public void Execute(int i, TransformAccess transform)
+        {
+            var pos = positions[i].Value;
+            var rot = rotations[i].Value;
+
+            pos.y += .5f;
+
+            transform.position = pos;
+            transform.rotation = new Quaternion(rot.x, rot.y, rot.z, rot.w);
+        }
     }
 
-    protected override void OnUpdate()
+    public struct Data
     {
-        foreach (var entity in GetEntities<Data>()) {
-            float3 pos = entity.position.Value;
-            float4 rot = entity.rotation.Value;
+        public readonly int Length;
 
-            entity.outputTransform.position = pos;
-            entity.outputTransform.rotation = new Quaternion(rot.x, rot.y, rot.z, rot.w);
+        [ReadOnly]
+        public ComponentDataArray<Position> positions;
+        [ReadOnly]
+        public ComponentDataArray<Rotation> rotations;
 
-            var localPos = entity.outputTransform.localPosition;
-            localPos.y += .5f;
-            entity.outputTransform.localPosition = localPos;
-        }
+        public TransformAccessArray transforms;
+    }
 
-        Enabled = false;
+    [Inject]
+    Data data;
+
+    protected override JobHandle OnUpdate(JobHandle inputDeps)
+    {
+        var syncJob = new SyncTransformJob
+        {
+            positions = data.positions,
+            rotations = data.rotations
+        };
+
+        return syncJob.Schedule(data.transforms, inputDeps);
     }
 }

@@ -1,25 +1,31 @@
 ﻿using UnityEngine;
 using Unity.Entities;
+using Unity.Burst;
+using Unity.Jobs;
 
 
 [UpdateAfter(typeof(FirePropagationSystem))]
-public class CooldownSystem : ComponentSystem
+public class CooldownSystem : JobComponentSystem
 {
-    public struct Group
+    public struct CooldownJob : IJobProcessComponentData<HeatAccumulator>
     {
-        public readonly int Length;
-        public ComponentArray<HeatAccumulator> heatAccumulator;
+        public float cooldownRate;
+
+        public void Execute(ref HeatAccumulator heatAccumulator)
+        {
+            heatAccumulator.accumulatedHeat -= cooldownRate;
+        }
     }
 
-    [Inject]
-    Group group;
-
-    protected override void OnUpdate()
+    protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
-        if (!Simulation.isRuning) return;
+        if (!Simulation.isRuning) return inputDeps;
 
-        for (var i = 0; i < group.Length; i++) {
-            group.heatAccumulator[i].accumulatedHeat -= Simulation.Settings.cooldownRate * Time.deltaTime;
-        }
+        var job = new CooldownJob
+        {
+            cooldownRate = Simulation.Settings.cooldownRate * Time.deltaTime
+        };
+
+        return job.Schedule(this, inputDeps);
     }
 }

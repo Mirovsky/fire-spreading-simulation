@@ -51,12 +51,12 @@ public class UIController : MonoBehaviour
         var origins = Random.Range(1, 3);
 
         var count = plantsManager.Count();
-        for (var i = 0; i < origins; i++) {
+        /* for (var i = 0; i < origins; i++) {
             var plant = plantsManager.Get(Random.Range(0, count - 1));
 
             var heat = plant.GetComponent<Heat>();
             heat.heat = heat.maximumHeat; 
-        }
+        } */
     }
 
     public void Simulate(bool simulate)
