@@ -47,12 +47,7 @@ public abstract class PlantSpawner
     {
         manager.SetComponentData(entity, new Position { Value = positionRotation.Item1 });
         manager.SetComponentData(entity, new Rotation { Value = positionRotation.Item2 });
-        manager.SetComponentData(entity, new HeatAccumulator { });
 
         manager.AddBuffer<NeighboursBufferElement>(entity);
-
-        /* manager.SetComponentData(entity, new Heat { });
-        manager.SetComponentData(entity, new Fuel { });
-        manager.SetComponentData(entity, new HeatAccumulator { }); */
     }
 }

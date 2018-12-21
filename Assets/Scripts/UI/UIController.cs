@@ -20,6 +20,7 @@ public class UIController : MonoBehaviour
     LMBTools currentTool = LMBTools.SELECT_PLANT;
 
 
+    EntityManager manager;
     SpawnedPlantsManager plantsManager;
     SyncTransformSystem syncTransforms;
     SinglePlantSpawner singleSpawner;
@@ -90,6 +91,7 @@ public class UIController : MonoBehaviour
 
     void Start()
     {
+        manager = World.Active.GetOrCreateManager<EntityManager>();
         plantsManager = Simulation.PlantsManager;
 
         singleSpawner = new SinglePlantSpawner(Simulation.Settings.simulationTerrain, plantsManager, Simulation.Settings);
@@ -154,15 +156,22 @@ public class UIController : MonoBehaviour
     void ToggleFireHandler()
     {
         GameObject plant;
-        if (GetPlant(out plant)) {
-            var heat = plant.GetComponent<Heat>();
-            var accumulator = plant.GetComponent<HeatAccumulator>();
 
+        if (GetPlant(out plant)) {
+            var entity = plant.GetComponent<GameObjectEntity>().Entity;
+
+            var heat = manager.GetComponentData<Heat>(entity);
+            var accumulator = manager.GetComponentData<HeatAccumulator>(entity);
+            
             if (accumulator.accumulatedHeat > 0) {
                 accumulator.accumulatedHeat = 0;
             } else {
                 accumulator.accumulatedHeat = heat.maximumHeat;
             }
+
+            Debug.Log(heat.maximumHeat + " " + accumulator.accumulatedHeat);
+
+            manager.SetComponentData(entity, accumulator);
         }
     }
 

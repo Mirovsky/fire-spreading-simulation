@@ -171,10 +171,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SerializedData:
-    combustionThreshold: 0
-    radiationRate: 0
+    combustionThreshold: 100
+    radiationRate: 10
     heat: 0
-    maximumHeat: 0
+    maximumHeat: 200
 --- !u!114 &3253100197249575379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188,4 +188,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SerializedData:
-    fuel: 0
+    fuel: 200

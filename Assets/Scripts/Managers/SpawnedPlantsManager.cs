@@ -8,13 +8,11 @@ public struct PlantsLookupItem : IQuadTreeObject
 {
     public Entity entity;
     public Position position;
-    public Heat heat;
 
-    public PlantsLookupItem(Entity e, Position p, Heat h)
+    public PlantsLookupItem(Entity e, Position p)
     {
         entity = e;
         position = p;
-        heat = h;
     }
 
     public Vector2 GetPosition()
@@ -50,11 +48,10 @@ public class SpawnedPlantsManager : MonoBehaviour
         totalPlants++;
 
         var position = manager.GetComponentData<Position>(entity);
-        var heat = manager.GetComponentData<Heat>(entity);
 
         plants.Add(entity);
 
-        var lookup = new PlantsLookupItem(entity, position, heat);
+        var lookup = new PlantsLookupItem(entity, position);
         plantsLookup.Insert(lookup);
 
         return lookup;

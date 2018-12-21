@@ -42,7 +42,9 @@ public class FieldPlantSpawner : PlantSpawner
 
             for (int e = 0; e < neighbours.Count; e++)
             {
-                neighboursBuffer.Add(new NeighboursBufferElement { Value = neighbours[e] });
+                if (entity != neighbours[e].entity) {
+                    neighboursBuffer.Add(new NeighboursBufferElement { Value = neighbours[e].entity });
+                }
             }
         }
     }
