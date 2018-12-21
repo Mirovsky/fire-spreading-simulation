@@ -9,10 +9,10 @@ public class PlantFireRendererSystem : ComponentSystem
         public readonly int Length;
         public ComponentArray<MeshRenderer> mesh;
 
-        /* [ReadOnly]
-        public ComponentArray<Fuel> fuel;
         [ReadOnly]
-        public ComponentArray<Heat> heat; */
+        public ComponentDataArray<Fuel> fuel;
+        [ReadOnly]
+        public ComponentDataArray<Heat> heat;
     }
 
     [Inject]
@@ -31,7 +31,7 @@ public class PlantFireRendererSystem : ComponentSystem
         var dead = Simulation.Settings.dead;
         var onFire = Simulation.Settings.onFire;
         
-        /* for (var i = 0; i < group.Length; i++) {
+        for (var i = 0; i < group.Length; i++) {
             group.mesh[i].GetPropertyBlock(propertyBlock);
 
             var color = group.fuel[i].fuel <= 0 ?
@@ -41,6 +41,6 @@ public class PlantFireRendererSystem : ComponentSystem
             propertyBlock.SetColor("_Color", color);
 
             group.mesh[i].SetPropertyBlock(propertyBlock);
-        } */
+        }
     }
 }

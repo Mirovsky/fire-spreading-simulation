@@ -8,6 +8,7 @@ using Unity.Mathematics;
 
 public class FirePropagationSystem : JobComponentSystem
 {
+    [BurstCompile]
     public struct FirePropagationJob : IJobParallelFor
     {
         public float deltaTime;
@@ -15,41 +16,41 @@ public class FirePropagationSystem : JobComponentSystem
         public float windSpeed;
         public float2 windDirection;
 
-        [WriteOnly]
         public ComponentDataArray<HeatAccumulator> heatAccumulators;
 
         [ReadOnly]
-        public ComponentDataArray<Position> positions;
+        public ComponentDataFromEntity<Heat> entityHeat;
+        [ReadOnly]
+        public ComponentDataFromEntity<Position> entityPositions;
+
         [ReadOnly]
         public ComponentDataArray<Heat> heat;
+        [ReadOnly]
+        public ComponentDataArray<Position> positions;
         [ReadOnly]
         public ComponentDataArray<Fuel> fuel;
         [ReadOnly]
         public BufferArray<NeighboursBufferElement> neighbours;
 
-        [BurstCompile]
         public void Execute(int index)
         {
-            var accumulator = new HeatAccumulator { accumulatedHeat = 0 };
+            var accumulator = heatAccumulators[index];
 
-            if (fuel[index].fuel > 0)
-            {
-                if (heat[index].heat > heat[index].combustionThreshold)
-                {
+            if (fuel[index].fuel > 0) {
+                if (heat[index].heat > heat[index].combustionThreshold) {
                     accumulator.accumulatedHeat += heat[index].radiationRate * deltaTime;
                 }
 
-                var neighborsLength = neighbours[index].Length;
-                var position = positions[index].Value;
                 var currentNeighbours = neighbours[index];
+                var neighborsLength = currentNeighbours.Length;
+                var position = positions[index].Value;
+                
+                for (var j = 0; j < neighborsLength; j++) {
+                    var currentEntity = currentNeighbours[j].Value;
+                    var currentHeat = entityHeat[currentEntity];
 
-                for (var j = 0; j < neighborsLength; j++)
-                {
-                    var currentHeat = currentNeighbours[j].Value.heat;
-
-                    if (currentHeat.heat > currentHeat.combustionThreshold)
-                    {
-                        var neighbourPos = currentNeighbours[j].Value.position.Value;
+                    if (currentHeat.heat > currentHeat.combustionThreshold) {
+                        var neighbourPos = entityPositions[currentEntity].Value;
 
                         var distance = math.distance(neighbourPos, position);
                         var direction = position - neighbourPos;
@@ -78,9 +79,9 @@ public class FirePropagationSystem : JobComponentSystem
     public struct Group
     {
         public readonly int Length;
-
+        
         public ComponentDataArray<HeatAccumulator> heatAccumulator;
-
+        
         [ReadOnly]
         public ComponentDataArray<Heat> heat;
         [ReadOnly]
@@ -94,6 +95,13 @@ public class FirePropagationSystem : JobComponentSystem
     [Inject]
     Group group;
 
+    [Inject]
+    ComponentDataFromEntity<Heat> entityHeat;
+
+    [Inject]
+    ComponentDataFromEntity<Position> entityPositions;
+
+
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
         if (!Simulation.isRuning) return inputDeps;
@@ -103,6 +111,9 @@ public class FirePropagationSystem : JobComponentSystem
             neightbourSize = Simulation.Settings.neighborSize,
             windSpeed = Simulation.windSpeed,
             windDirection = Simulation.windDirection,
+
+            entityHeat = entityHeat,
+            entityPositions = entityPositions,
 
             heatAccumulators = group.heatAccumulator,
             positions = group.position,

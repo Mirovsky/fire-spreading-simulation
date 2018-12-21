@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Unity.Entities;
 
 
 public class SinglePlantSpawner : PlantSpawner
@@ -8,13 +9,14 @@ public class SinglePlantSpawner : PlantSpawner
 
     public void Spawn(float worldX, float worldZ)
     {
-        /* var plant = Object.Instantiate(Simulation.Settings.plantsPrefab);
+        var plant = Object.Instantiate(Simulation.Settings.plantsPrefab);
         var positionRotation = ComputePlantPositionAndRotation(worldX, worldZ);
+        var entity = plant.GetComponent<GameObjectEntity>().Entity;
 
-        SetComponentData(plant, positionRotation);
+        SetComponentData(entity, positionRotation);
 
-        var lookup = plantsManager.Add(plant);
-        AddNeighbors(plant, worldX, worldZ, lookup); */
+        var lookup = plantsManager.Add(entity);
+        // AddNeighbors(plant, worldX, worldZ, lookup);
     }
 
     public void Remove(GameObject plant)

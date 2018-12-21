@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using Unity.Entities;
 
 [RequireComponent(typeof(LineRenderer))]
 public class PlantsInfoController : MonoBehaviour
@@ -15,30 +16,32 @@ public class PlantsInfoController : MonoBehaviour
     [SerializeField]
     Toggle drawRays;
 
+    EntityManager manager;
     LineRenderer debugLines;
 
     GameObject currentPlant;
+
     Transform currentPosition;
     Fuel currentFuel;
     HeatAccumulator currentAccumulator;
-    // Neighbors currentNeighbors;
+    DynamicBuffer<NeighboursBufferElement> currentNeighbors;
     Heat currentHeat;
 
     public void UpdatePlant(GameObject plant)
     {
+        var entity = plant.GetComponent<GameObjectEntity>().Entity;
+        currentNeighbors = manager.GetBuffer<NeighboursBufferElement>(entity);
+
         currentPlant = plant;
         currentPosition = plant.transform;
-        // currentNeighbors = plant.GetComponent<Neighbors>();
-        currentFuel = plant.GetComponent<Fuel>();
-        currentHeat = plant.GetComponent<Heat>();
 
         plantName.text = currentPlant.name;
-
         UpdateDebugRays();
     }
 
     void Start()
     {
+        manager = World.Active.GetOrCreateManager<EntityManager>();
         debugLines = GetComponent<LineRenderer>();
     }
 
@@ -46,30 +49,36 @@ public class PlantsInfoController : MonoBehaviour
     {
         if (currentPlant == null) return;
 
+        var entity = currentPlant.GetComponent<GameObjectEntity>().Entity;
+        currentFuel = manager.GetComponentData<Fuel>(entity);
+        currentHeat = manager.GetComponentData<Heat>(entity);
+
         heat.text = currentHeat.heat.ToString();
         fuel.text = currentFuel.fuel.ToString();
-        // neighbors.text = currentNeighbors.neighbors.Count.ToString();
+        neighbors.text = currentNeighbors.Length.ToString();
 
         debugLines.enabled = drawRays;
     }
 
     void UpdateDebugRays()
     {
-        /* var count = currentNeighbors.neighbors.Count;
+        var count = currentNeighbors.Length;
 
         debugLines.positionCount = count * 2;
         var vertices = new Vector3[count * 2];
 
         var currentVertexPos = 0;
         for (var i = 0; i < count; i++) {
+            var entityPosition = manager.GetComponentData<Position>(currentNeighbors[i].Value).Value;
+
             vertices[currentVertexPos] = currentPosition.position;
-            // vertices[currentVertexPos + 1] = currentNeighbors.neighbors[i].position.Value;
+            vertices[currentVertexPos + 1] = entityPosition;
 
             currentVertexPos += 2;
         }
 
         debugLines.SetPositions(vertices);
 
-        debugLines.enabled = drawRays; */
+        debugLines.enabled = drawRays;
     }
 }

@@ -2,6 +2,7 @@
 using Unity.Entities;
 using Unity.Burst;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 
 [UpdateAfter(typeof(FirePropagationSystem))]
@@ -11,6 +12,7 @@ public class CooldownSystem : JobComponentSystem
     {
         public float cooldownRate;
 
+        [BurstCompile]
         public void Execute(ref HeatAccumulator heatAccumulator)
         {
             heatAccumulator.accumulatedHeat -= cooldownRate;
