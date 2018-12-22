@@ -14,6 +14,9 @@ public class UIController : MonoBehaviour
     }
 
     [SerializeField]
+    SimulationSettings settings;
+
+    [SerializeField]
     PlantsInfoController plantsInfoController;
 
     [SerializeField]
@@ -21,66 +24,65 @@ public class UIController : MonoBehaviour
 
 
     EntityManager manager;
-    SpawnedPlantsManager plantsManager;
+    PlantsDatabase database;
+
     SyncTransformSystem syncTransforms;
     SinglePlantSpawner singleSpawner;
     FieldPlantSpawner fieldSpawner;
 
+    Camera mainCamera;
     LayerMask terrainMask;
     LayerMask plantsMask;
 
-    Camera mainCamera;
-
-    GameObject selectedPlant = null;
 
     public void Generate()
     {
         Clear();
 
-        fieldSpawner.Spawn();
-
-        syncTransforms.Enabled = true;
+        fieldSpawner.Spawn(settings.plantsCount);
     }
 
     public void Clear()
     {
-        fieldSpawner.Clear();
+        fieldSpawner.RemoveAll();
     }
 
     public void LightUp()
     {
         var origins = Random.Range(1, 3);
 
-        var count = plantsManager.Count();
-        /* for (var i = 0; i < origins; i++) {
-            var plant = plantsManager.Get(Random.Range(0, count - 1));
+        for (var i = 0; i < origins; i++) {
+            var plant = database.GetRandom();
+            var entity = plant.GetComponent<GameObjectEntity>().Entity;
 
-            var heat = plant.GetComponent<Heat>();
-            heat.heat = heat.maximumHeat; 
-        } */
+            var heat = manager.GetComponentData<Heat>(entity);
+            var accumulator = manager.GetComponentData<HeatAccumulator>(entity);
+            accumulator.accumulatedHeat = heat.maximumHeat;
+            manager.SetComponentData(entity, accumulator);
+        }
     }
 
     public void Simulate(bool simulate)
     {
-        Simulation.isRuning = simulate;
+        settings.isRunning = simulate;
     }
 
     public void ToggleTool(LMBTools tool)
     {
-        this.currentTool = tool;
+        currentTool = tool;
     }
 
     public void WindSpeedChange(float speed)
     {
-        Simulation.windSpeed = speed / 100f;
+        settings.windSpeed = speed / 100f;
     }
 
     public void WindDirectionChange(float direction)
     {
         var radianDirection = direction * Mathf.Deg2Rad;
 
-        Simulation.windDirection.x = Mathf.Cos(radianDirection);
-        Simulation.windDirection.y = Mathf.Sin(radianDirection);
+        settings.windDirection.x = Mathf.Cos(radianDirection);
+        settings.windDirection.y = Mathf.Sin(radianDirection);
     }
 
     public void Quit()
@@ -92,12 +94,10 @@ public class UIController : MonoBehaviour
     void Start()
     {
         manager = World.Active.GetOrCreateManager<EntityManager>();
-        plantsManager = Simulation.PlantsManager;
-
-        singleSpawner = new SinglePlantSpawner(Simulation.Settings.simulationTerrain, plantsManager, Simulation.Settings);
-        fieldSpawner = new FieldPlantSpawner(Simulation.Settings.simulationTerrain, plantsManager, Simulation.Settings);
-
         syncTransforms = World.Active.GetOrCreateManager<SyncTransformSystem>();
+
+        singleSpawner = settings.singleSpawner;
+        fieldSpawner = settings.fieldSpawner;
 
         mainCamera = Camera.main;
 
@@ -106,6 +106,8 @@ public class UIController : MonoBehaviour
 
         WindSpeedChange(100f);
         WindDirectionChange(0);
+
+        database = settings.plantsDatabase;
     }
 
     void Update()
@@ -138,9 +140,8 @@ public class UIController : MonoBehaviour
         Vector3 point;
 
         if (GetTerrainPoint(out point)) {
+            plantsInfoController.ClearSelection();
             singleSpawner.Spawn(point.x, point.z);
-
-            syncTransforms.Enabled = true;
         }
     }
 
@@ -149,7 +150,8 @@ public class UIController : MonoBehaviour
         GameObject plant;
 
         if (GetPlant(out plant)) {
-            
+            plantsInfoController.ClearSelection();
+            singleSpawner.Remove(plant);
         }
     }
 
@@ -168,9 +170,7 @@ public class UIController : MonoBehaviour
             } else {
                 accumulator.accumulatedHeat = heat.maximumHeat;
             }
-
-            Debug.Log(heat.maximumHeat + " " + accumulator.accumulatedHeat);
-
+            
             manager.SetComponentData(entity, accumulator);
         }
     }

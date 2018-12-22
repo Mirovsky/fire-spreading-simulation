@@ -6,7 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 
 
-public class FirePropagationSystem : JobComponentSystem
+public class FirePropagationSystem : JobComponentSystem, ISettingsInjectable
 {
     [BurstCompile]
     public struct FirePropagationJob : IJobParallelFor
@@ -46,7 +46,7 @@ public class FirePropagationSystem : JobComponentSystem
                 var position = positions[index].Value;
                 
                 for (var j = 0; j < neighborsLength; j++) {
-                    var currentEntity = currentNeighbours[j].Value;
+                    var currentEntity = currentNeighbours[j].entity;
                     var currentHeat = entityHeat[currentEntity];
 
                     if (currentHeat.heat > currentHeat.combustionThreshold) {
@@ -92,6 +92,7 @@ public class FirePropagationSystem : JobComponentSystem
         public BufferArray<NeighboursBufferElement> neighbours;
     }
 
+
     [Inject]
     Group group;
 
@@ -101,16 +102,22 @@ public class FirePropagationSystem : JobComponentSystem
     [Inject]
     ComponentDataFromEntity<Position> entityPositions;
 
+    SimulationSettings settings;
+
+    public void InjectSettings(SimulationSettings s)
+    {
+        settings = s;
+    }
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
-        if (!Simulation.isRuning) return inputDeps;
+        if (!settings.isRunning) return inputDeps;
 
         var job = new FirePropagationJob {
             deltaTime = Time.deltaTime,
-            neightbourSize = Simulation.Settings.neighborSize,
-            windSpeed = Simulation.windSpeed,
-            windDirection = Simulation.windDirection,
+            neightbourSize = settings.neighborSize,
+            windSpeed = settings.windSpeed,
+            windDirection = settings.windDirection,
 
             entityHeat = entityHeat,
             entityPositions = entityPositions,

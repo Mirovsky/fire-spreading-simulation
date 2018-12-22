@@ -1617,6 +1617,7 @@ MonoBehaviour:
   cameraSpeed: 40
   cameraScrollSpeed: 1000
   cameraDragSpeed: 10
+  settings: {fileID: 658068761}
 --- !u!20 &534669904
 Camera:
   m_ObjectHideFlags: 0
@@ -1955,7 +1956,6 @@ GameObject:
   m_Component:
   - component: {fileID: 658068762}
   - component: {fileID: 658068761}
-  - component: {fileID: 658068763}
   m_Layer: 0
   m_Name: Settings
   m_TagString: Untagged
@@ -1976,18 +1976,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   simulationTerrain: {fileID: 1400770247}
-  plantsCount: 5000
-  plantMaterial: {fileID: 2100000, guid: 098e364a0122f8b448b72548e85591a1, type: 2}
-  neighborSize: 5
+  plantsCount: 10
+  neighborSize: 100
   plantsPrefab: {fileID: 7336559902379675749, guid: 8931260acd90712449c37ade12fdc0d6,
     type: 3}
-  fuel: 0
-  combustionThreshold: 0
-  cooldownRate: 3
-  maxWindSpeed: 5
+  plantMaterial: {fileID: 2100000, guid: 098e364a0122f8b448b72548e85591a1, type: 2}
   alive: {r: 0.33490568, g: 1, b: 0.39172623, a: 1}
   dead: {r: 0.23584908, g: 0.23584908, b: 0.23584908, a: 1}
   onFire: {r: 1, g: 0.3254717, b: 0.3254717, a: 1}
+  cooldownRate: 3
+  isRunning: 0
+  windDirection:
+    x: 0
+    y: 0
+  windSpeed: 0
 --- !u!4 &658068762
 Transform:
   m_ObjectHideFlags: 0
@@ -2002,19 +2004,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &658068763
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658068760}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bae73392be8baa4d9ce571fcc1cc534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  drawDebug: 0
 --- !u!1 &666021442
 GameObject:
   m_ObjectHideFlags: 0
@@ -3641,6 +3630,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4e23c150c46c164f8e1f048b9c88143, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  settings: {fileID: 658068761}
   plantsInfoController: {fileID: 1358633296}
   currentTool: 4
 --- !u!1 &1223656571

@@ -6,7 +6,7 @@ using Unity.Jobs;
 
 
 [UpdateBefore(typeof(FirePropagationSystem))]
-public class FuelConsumptionSystem : JobComponentSystem
+public class FuelConsumptionSystem : JobComponentSystem, ISettingsInjectable
 {
     public struct FuelConsumptionJob : IJobProcessComponentData<Fuel, Heat>
     {
@@ -23,9 +23,17 @@ public class FuelConsumptionSystem : JobComponentSystem
         }
     }
 
+
+    SimulationSettings settings;
+
+    public void InjectSettings(SimulationSettings s)
+    {
+        settings = s;
+    }
+
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
-        if (!Simulation.isRuning) return inputDeps;
+        if (!settings.isRunning) return inputDeps;
 
         var job = new FuelConsumptionJob
         {

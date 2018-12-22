@@ -27,9 +27,16 @@ public class PlantsInfoController : MonoBehaviour
     DynamicBuffer<NeighboursBufferElement> currentNeighbors;
     Heat currentHeat;
 
+    public void ClearSelection()
+    {
+        currentPlant = null;
+        debugLines.enabled = false;
+    }
+
     public void UpdatePlant(GameObject plant)
     {
         var entity = plant.GetComponent<GameObjectEntity>().Entity;
+
         currentNeighbors = manager.GetBuffer<NeighboursBufferElement>(entity);
 
         currentPlant = plant;
@@ -50,6 +57,14 @@ public class PlantsInfoController : MonoBehaviour
         if (currentPlant == null) return;
 
         var entity = currentPlant.GetComponent<GameObjectEntity>().Entity;
+
+        if (!manager.Exists(entity)) {
+            currentPlant = null;
+            debugLines.enabled = false;
+
+            return;
+        };
+
         currentFuel = manager.GetComponentData<Fuel>(entity);
         currentHeat = manager.GetComponentData<Heat>(entity);
 
@@ -69,7 +84,7 @@ public class PlantsInfoController : MonoBehaviour
 
         var currentVertexPos = 0;
         for (var i = 0; i < count; i++) {
-            var entityPosition = manager.GetComponentData<Position>(currentNeighbors[i].Value).Value;
+            var entityPosition = manager.GetComponentData<Position>(currentNeighbors[i].entity).Value;
 
             vertices[currentVertexPos] = currentPosition.position;
             vertices[currentVertexPos + 1] = entityPosition;

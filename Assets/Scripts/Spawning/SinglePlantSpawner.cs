@@ -1,66 +1,70 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Entities;
+using Unity.Mathematics;
 
 
 public class SinglePlantSpawner : PlantSpawner
 {
-    public SinglePlantSpawner(Terrain t, SpawnedPlantsManager p, SimulationSettings s) : base(t, p, s) {}
-
     public void Spawn(float worldX, float worldZ)
     {
-        var plant = Object.Instantiate(Simulation.Settings.plantsPrefab);
-        var positionRotation = ComputePlantPositionAndRotation(worldX, worldZ);
+        var plant = Object.Instantiate(settings.plantsPrefab);
+        var item = new SpawnItemData { position = new float3 { x = worldX, y = 0, z = worldZ } };
+
+        ComputePlacement(ref item);
         var entity = plant.GetComponent<GameObjectEntity>().Entity;
 
-        SetComponentData(entity, positionRotation);
+        SetComponentData(entity, item);
 
-        var lookup = plantsManager.Add(entity);
-        // AddNeighbors(plant, worldX, worldZ, lookup);
+        database.Add(plant);
+
+        AddNeighbors(plant);
     }
 
     public void Remove(GameObject plant)
     {
-        // var neighbors = plant.GetComponent<Neighbors>().neighbors;
+        var entity = plant.GetComponent<GameObjectEntity>().Entity;
 
-        /* for (var i = 0; i < neighbors.Count; i++) {
-            var neighborNeighbors = neighbors[i].position.gameObject.GetComponent<Neighbors>().neighbors;
+        database.Remove(plant);
 
-            var index = FindNeighbor(neighborNeighbors, plant);
-            if (index != -1) {
-                neighborNeighbors.RemoveAt(index);
+        var size = settings.neighborSize;
+        var buffer = manager.GetBuffer<NeighboursBufferElement>(entity);
+        for (var i = 0; i < buffer.Length; i++) {
+            var position = manager.GetComponentData<Position>(buffer[i].entity);
+            var neighboursBuffer = manager.GetBuffer<NeighboursBufferElement>(buffer[i].entity);
+            neighboursBuffer.Clear();
+
+            var newNeighbours = database.GetNeighbours((int)(position.Value.x - size), (int)(position.Value.z - size), (int)(size * 2), (int)(size * 2));
+            for (var e = 0; e < newNeighbours.Count; e++) {
+                if (buffer[i].entity != newNeighbours[e].entity) {
+                    neighboursBuffer.Add(new NeighboursBufferElement { entity = newNeighbours[e].entity });
+                }
             }
-        } */
-    }
-
-    void AddNeighbors(GameObject plant, float x, float z, PlantsLookupItem lookup)
-    {
-        var distance = settings.neighborSize;
-       /* var neighborsComponent = plant.GetComponent<Neighbors>();
-        neighborsComponent.neighbors = new List<PlantsLookupItem>(
-            plantsManager.GetSurroudings((int)(x - distance / 2), (int)(z - distance / 2), (int)distance, (int)distance)
-        );
-
-        Debug.Log(neighborsComponent.neighbors.Count);
-
-        /* for (var i = 0; i < neighborsComponent.neighbors.Count; i++) {
-            var neighborNeightbors = neighborsComponent.neighbors[i].position.gameObject.GetComponent<Neighbors>().neighbors;
-
-            // Could potentially slowdown game.
-            // Would be a good idea to implement some limit on number of neighbors.
-            neighborNeightbors.Add(lookup);
-        } */
-    }
-
-    // Prone to break with this chaining.
-    int FindNeighbor(List<PlantsLookupItem> neighborNeighbors, GameObject toBeFound)
-    {
-        for (var j = 0; j < neighborNeighbors.Count; j++) {
-            /* if (neighborNeighbors[j].position.gameObject == toBeFound) {
-                return j;
-            } */
         }
+        
+        Object.Destroy(plant);
+    }
 
-        return -1;
+    void AddNeighbors(GameObject plant)
+    {
+        var entity = plant.GetComponent<GameObjectEntity>().Entity;
+        var size = settings.neighborSize;
+
+        var position = manager.GetComponentData<Position>(entity);
+
+        var neighbourComponent = plant.GetComponent<NeighboursComponent>();
+        neighbourComponent.entity = entity;
+        neighbourComponent.position = position;
+
+        var neighbours = database.GetNeighbours((int)(position.Value.x - size), (int)(position.Value.z - size), (int)(size * 2), (int)(size * 2));
+
+        var buffer = manager.GetBuffer<NeighboursBufferElement>(entity);
+        for (var e = 0; e < neighbours.Count; e++) {
+            if (entity != neighbours[e].entity) {
+                buffer.Add(new NeighboursBufferElement { entity = neighbours[e].entity, position = neighbours[e].position });
+
+                var neighboursBuffer = manager.GetBuffer<NeighboursBufferElement>(neighbours[e].entity);
+                neighboursBuffer.Add(new NeighboursBufferElement { entity = entity });
+            }
+        }
     }
 }

@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 4076981064532192364}
   - component: {fileID: 5166190085123297061}
   - component: {fileID: 3253100197249575379}
+  - component: {fileID: 3590957706353896356}
   m_Layer: 10
   m_Name: Plant
   m_TagString: Plant
@@ -189,3 +190,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SerializedData:
     fuel: 200
+--- !u!114 &3590957706353896356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7336559902379675749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f08fe3b17783d436b939e4860754f2f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  position:
+    Value:
+      x: 0
+      y: 0
+      z: 0

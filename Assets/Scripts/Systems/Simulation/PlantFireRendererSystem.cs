@@ -2,7 +2,7 @@
 using Unity.Entities;
 using Unity.Collections;
 
-public class PlantFireRendererSystem : ComponentSystem
+public class PlantFireRendererSystem : ComponentSystem, ISettingsInjectable
 {
     public struct Group
     {
@@ -18,7 +18,13 @@ public class PlantFireRendererSystem : ComponentSystem
     [Inject]
     Group group;
 
+    SimulationSettings settings;
     MaterialPropertyBlock propertyBlock;
+
+    public void InjectSettings(SimulationSettings s)
+    {
+        settings = s;
+    }
 
     protected override void OnCreateManager()
     {
@@ -27,9 +33,9 @@ public class PlantFireRendererSystem : ComponentSystem
 
     protected override void OnUpdate()
     {
-        var alive = Simulation.Settings.alive;
-        var dead = Simulation.Settings.dead;
-        var onFire = Simulation.Settings.onFire;
+        var alive = settings.alive;
+        var dead = settings.dead;
+        var onFire = settings.onFire;
         
         for (var i = 0; i < group.Length; i++) {
             group.mesh[i].GetPropertyBlock(propertyBlock);
