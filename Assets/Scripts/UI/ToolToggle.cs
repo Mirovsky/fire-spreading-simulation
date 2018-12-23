@@ -17,6 +17,14 @@ public class ToolToggle : MonoBehaviour
     [SerializeField]
     Button selectPlant;
 
+    bool interactionsEnabled = true;
+
+    public void EnableInteractions(bool enable)
+    {
+        interactionsEnabled = enable;
+
+        ToggleTools();
+    }
 
     void Start()
     {
@@ -30,39 +38,35 @@ public class ToolToggle : MonoBehaviour
     {
         controller.ToggleTool(UIController.LMBTools.ADD_PLANT);
 
-        addPlantButton.interactable = false;
-        removePlantButton.interactable = true;
-        toggleFire.interactable = true;
-        selectPlant.interactable = true;
+        ToggleTools();
     }
 
     void RemovePlantClicked()
     {
         controller.ToggleTool(UIController.LMBTools.REMOVE_PLANT);
 
-        addPlantButton.interactable = true;
-        removePlantButton.interactable = false;
-        toggleFire.interactable = true;
-        selectPlant.interactable = true;
+        ToggleTools();
     }
 
     void ToggleFireClicked()
     {
         controller.ToggleTool(UIController.LMBTools.TOGGLE_FIRE);
 
-        addPlantButton.interactable = true;
-        removePlantButton.interactable = true;
-        toggleFire.interactable = false;
-        selectPlant.interactable = true;
+        ToggleTools();
     }
 
     void SelectPlantClicked()
     {
         controller.ToggleTool(UIController.LMBTools.SELECT_PLANT);
 
-        addPlantButton.interactable = true;
-        removePlantButton.interactable = true;
-        toggleFire.interactable = true;
-        selectPlant.interactable = false;
+        ToggleTools();
+    }
+
+    void ToggleTools()
+    {
+        addPlantButton.interactable = (controller.currentTool != UIController.LMBTools.ADD_PLANT) && interactionsEnabled;
+        removePlantButton.interactable = (controller.currentTool != UIController.LMBTools.REMOVE_PLANT) && interactionsEnabled;
+        toggleFire.interactable = (controller.currentTool != UIController.LMBTools.TOGGLE_FIRE) && interactionsEnabled;
+        selectPlant.interactable = (controller.currentTool != UIController.LMBTools.SELECT_PLANT);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Unity.Entities;
+using UnityEngine.UI;
 
 
 public class UIController : MonoBehaviour
@@ -13,6 +14,8 @@ public class UIController : MonoBehaviour
         SELECT_PLANT
     }
 
+    public LMBTools currentTool = LMBTools.SELECT_PLANT;
+
     [SerializeField]
     SimulationSettings settings;
 
@@ -20,7 +23,11 @@ public class UIController : MonoBehaviour
     PlantsInfoController plantsInfoController;
 
     [SerializeField]
-    LMBTools currentTool = LMBTools.SELECT_PLANT;
+    ToolToggle toolsToggle;
+
+    [Header("Visuals")]
+    [SerializeField]
+    Image bgImage;
 
 
     EntityManager manager;
@@ -33,6 +40,9 @@ public class UIController : MonoBehaviour
     Camera mainCamera;
     LayerMask terrainMask;
     LayerMask plantsMask;
+
+    Color notSimulatingBackground = new Color(0.2641509f, 0.2641509f, 0.2641509f, 0.8f);
+    Color simulatingBackground = new Color(0.4f, 0, 0, 0.8f);
 
 
     public void Generate()
@@ -62,9 +72,21 @@ public class UIController : MonoBehaviour
         }
     }
 
+    public void PlantsCountChange(float plants)
+    {
+        settings.plantsCount = (int)plants;
+
+        Debug.Log(Mathf.Log(plants, 2));
+    }
+
     public void Simulate(bool simulate)
     {
         settings.isRunning = simulate;
+
+        currentTool = LMBTools.SELECT_PLANT;
+        toolsToggle.EnableInteractions(!simulate);
+
+        bgImage.color = simulate ? simulatingBackground : notSimulatingBackground;
     }
 
     public void ToggleTool(LMBTools tool)

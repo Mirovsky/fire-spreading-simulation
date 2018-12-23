@@ -59,7 +59,7 @@ public class FirePropagationSystem : JobComponentSystem, ISettingsInjectable
                         var rateOfFire = currentHeat.radiationRate * deltaTime;
 
                         var distanceAcc = (1f - distance / neightbourSize);
-                        var windAcc = ((1f - windAngle / 180f * windSpeed) * 2 - 1);
+                        var windAcc = ((1f - windAngle / 180f) * 2 - 1) * windSpeed;
 
                         accumulator.accumulatedHeat += (rateOfFire * distanceAcc) + (rateOfFire * windAcc);
                     }

@@ -72,7 +72,7 @@ public class PlantsInfoController : MonoBehaviour
         fuel.text = currentFuel.fuel.ToString();
         neighbors.text = currentNeighbors.Length.ToString();
 
-        debugLines.enabled = drawRays;
+        debugLines.enabled = drawRays.isOn;
     }
 
     void UpdateDebugRays()
@@ -94,6 +94,6 @@ public class PlantsInfoController : MonoBehaviour
 
         debugLines.SetPositions(vertices);
 
-        debugLines.enabled = drawRays;
+        debugLines.enabled = drawRays.isOn;
     }
 }
