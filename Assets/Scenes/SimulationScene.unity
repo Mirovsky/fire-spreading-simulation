@@ -2166,7 +2166,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   simulationTerrain: {fileID: 1400770247}
   plantsCount: 10
-  neighborSize: 5
+  neighborSize: 7
   plantsPrefab: {fileID: 7336559902379675749, guid: 8931260acd90712449c37ade12fdc0d6,
     type: 3}
   plantMaterial: {fileID: 2100000, guid: 098e364a0122f8b448b72548e85591a1, type: 2}

@@ -173,7 +173,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SerializedData:
     combustionThreshold: 100
-    radiationRate: 10
+    radiationRate: 15
     heat: 0
     maximumHeat: 200
 --- !u!114 &3253100197249575379
