@@ -1,16 +1,21 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
 
 
-public abstract class PlantSpawner
+public struct SpawnItemData
+{
+    public float3 position;
+    public float4 rotation;
+}
+
+public abstract class PlantSpawner : ISettingsInjectable
 {
     protected GameObject plantPrefab;
 
     protected EntityManager manager;
     protected SimulationSettings settings;
-    protected SpawnedPlantsManager plantsManager;
+    protected PlantsDatabase database;
 
     protected Terrain terrain;
     protected TerrainData terrainData;
@@ -18,36 +23,33 @@ public abstract class PlantSpawner
     protected Vector3 terrainOrigin;
 
 
-    protected PlantSpawner(Terrain t, SpawnedPlantsManager p, SimulationSettings s)
+    public void InjectSettings(SimulationSettings s)
     {
         manager = World.Active.GetOrCreateManager<EntityManager>();
 
-        plantsManager = p;
         settings = s;
-        terrain = t;
+        database = s.plantsDatabase;
+        
+        terrain = settings.simulationTerrain;
         terrainData = terrain.terrainData;
         terrainSize = terrainData.size;
         terrainOrigin = terrain.transform.position;
     }
-
-    protected Tuple<float3, float4> ComputePlantPositionAndRotation(float worldX, float worldZ)
+    
+    protected void ComputePlacement(ref SpawnItemData item)
     {
-        var height = terrain.SampleHeight(new Vector3(worldX, 0, worldZ));
-        var normal = terrainData.GetInterpolatedNormal((worldX - terrainOrigin.x) / terrainSize.x, (worldZ - terrainOrigin.z) / terrainSize.z);
+        var height = terrain.SampleHeight(item.position);
+        var normal = terrainData.GetInterpolatedNormal((item.position.x - terrainOrigin.x) / terrainSize.x, (item.position.z - terrainOrigin.z) / terrainSize.z);
+        var rotation = Quaternion.FromToRotation(Vector3.up, normal);
 
-        var objectRotation = Quaternion.FromToRotation(Vector3.up, normal);
-
-        var position = new float3 { x = worldX + terrainOrigin.x, y = height + terrainOrigin.y, z = worldZ + terrainOrigin.z };
-        var rotation = new float4 { x = objectRotation.x, y = objectRotation.y, z = objectRotation.z, w = objectRotation.w };
-
-        return new Tuple<float3, float4>(position, rotation);
+        item.position.y = height + terrainOrigin.y;
+        item.rotation = new float4 { x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w };
     }
 
-    protected void SetComponentData(Entity entity, Tuple<float3, float4> positionRotation)
+    protected void SetComponentData(Entity entity, SpawnItemData item)
     {
-        manager.SetComponentData(entity, new Position { Value = positionRotation.Item1 });
-        manager.SetComponentData(entity, new Rotation { Value = positionRotation.Item2 });
-
+        manager.SetComponentData(entity, new Position { Value = item.position });
+        manager.SetComponentData(entity, new Rotation { Value = item.rotation });
         manager.AddBuffer<NeighboursBufferElement>(entity);
     }
 }

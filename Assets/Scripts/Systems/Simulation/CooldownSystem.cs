@@ -6,8 +6,10 @@ using Unity.Mathematics;
 
 
 [UpdateAfter(typeof(FirePropagationSystem))]
-public class CooldownSystem : JobComponentSystem
+public class CooldownSystem : JobComponentSystem, ISettingsInjectable
 {
+    SimulationSettings settings;
+
     public struct CooldownJob : IJobProcessComponentData<HeatAccumulator>
     {
         public float cooldownRate;
@@ -19,13 +21,19 @@ public class CooldownSystem : JobComponentSystem
         }
     }
 
+    
+    public void InjectSettings(SimulationSettings s)
+    {
+        settings = s;
+    }
+
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
-        if (!Simulation.isRuning) return inputDeps;
+        if (!settings.isRunning) return inputDeps;
 
         var job = new CooldownJob
         {
-            cooldownRate = Simulation.Settings.cooldownRate * Time.deltaTime
+            cooldownRate = settings.cooldownRate * Time.deltaTime
         };
 
         return job.Schedule(this, inputDeps);

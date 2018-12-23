@@ -1,0 +1,19 @@
+{
+    "name": "Tests",
+    "references": [
+        "Unity.Entities",
+        "Unity.Entities.Tests",
+        "Unity.Mathematics",
+        "Unity.Transforms"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

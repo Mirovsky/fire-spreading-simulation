@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class CameraMovement : MonoBehaviour
+public class CameraMovement : MonoBehaviour, ISettingsInjectable
 {
     [SerializeField]
     float cameraSpeed;
@@ -11,10 +12,11 @@ public class CameraMovement : MonoBehaviour
     float cameraScrollSpeed;
     [SerializeField]
     float cameraDragSpeed;
+    [SerializeField]
+    SimulationSettings settings;
 
     Transform cameraTransform;
     Camera mainCamera;
-    SimulationSettings settings;
 
     Vector3 terrainOrigin;
     Vector3 terrainSize;
@@ -25,9 +27,13 @@ public class CameraMovement : MonoBehaviour
     const float cameraMax = 150f;
 
 
+    public void InjectSettings(SimulationSettings s)
+    {
+        settings = s;
+    }
+
     void Start()
     {
-        settings = Simulation.Settings;
         mainCamera = Camera.main;
         cameraTransform = transform;
 
@@ -63,4 +69,6 @@ public class CameraMovement : MonoBehaviour
 
         lastMousePos = mousePos;
     }
+
+    
 }
