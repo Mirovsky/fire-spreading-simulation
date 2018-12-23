@@ -13,16 +13,21 @@ Simple fire spreading simulation in Unity. Using Unity 2018.3. Using new Unity E
 
 ## Implementation
 
-### Packages used:
+### Preview packages used:
 - Entities
 - Collections
 - Mathemathics
 - Jobs
 - Burst
 
-Implementation is quite simple. Using QuadTree for spacial queries for neighbor plants in certain radius. This is done only on two occasions. Either by generating field of plants, then the query is run for each plant, or when adding/removing single plant. Then the query is done for single plant and all neighbors are updated with newly added entity.
+Code is using new Unity ECS and data oriented approach.
 
-QuadTree was used because of simplicity. Initially I was looking into creating mesh from plants using Delaunay Triangulation, but implementation with some at least optimal adding and removing elements proved to be difficult in given time span. This can be optimized further. Using M-Tree data structure could be beneficial as well, since single plant needs to know about surrounding plants in circle.
+Implementation is quite simple. Using QuadTree for spatial queries for neighbour plants in certain rectangle area. This is done only on two occasions. Either by generating field of plants, then the query is run for each plant. When adding/removing single plant query is done for new plant and all neighbours are updated with newly added entity. Removing is done in a similar fashion, item is removed from QuadTree and for each of his neighbours is run the spatial query again.
+
+QuadTree was used because of its simplicity. Initially I was looking into creating mesh from plants using Delaunay triangulation, but implementation with some at least optimal adding and removing elements proved to be difficult in given timespan. This can be optimized further. Using M-Tree data structure could be beneficial as well, since single plant needs to know about surrounding plants in circle.
+
+All timeconsuming parts runs on worker threads.
+
 
 ### Systems
 - **FirePropagationSystem**
@@ -34,3 +39,4 @@ QuadTree was used because of simplicity. Initially I was looking into creating m
 - **ApplyAccumulatedHeatSystem**
   - takes all accumulated heat and applies it to each plant
   - enables use of multithreading for FirePropagationSystem and minimizing chance of accidental race conditions
+g
